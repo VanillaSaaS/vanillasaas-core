@@ -1,0 +1,38 @@
+# =============================================================================
+#  public/.htaccess — RULES FOR THE WEB ROOT
+# =============================================================================
+
+# Don't list folder contents if there's no index file.
+Options -Indexes
+
+# "RewriteEngine On" here also stops the root .htaccess rules from being
+# re-applied to requests that are already inside /public.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # The home page ("/") is left to DirectoryIndex below.
+    RewriteRule ^$ - [L]
+
+    # Anything that isn't a real file (a mistyped address, a folder with no
+    # page in it) gets the app's styled "Page not found" from 404.php,
+    # instead of the web server's bare default error page.
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ 404.php [L]
+</IfModule>
+
+DirectoryIndex index.php
+
+# Never serve hidden files (.htaccess, .git, .env) or data/backup files that
+# might be dropped here by mistake.
+<FilesMatch "(^\.|\.(sqlite|sqlite3|db|sql|log|bak|ini|env|md|lock)$)">
+    Require all denied
+</FilesMatch>
+
+# Cache static assets for a week. If you change app.css / app.js, add
+# ?v=2 to the <link>/<script> URLs in the layouts to bust caches.
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 7 days"
+    ExpiresByType application/javascript "access plus 7 days"
+    ExpiresByType text/javascript "access plus 7 days"
+</IfModule>

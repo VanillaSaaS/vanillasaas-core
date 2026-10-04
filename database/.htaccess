@@ -1,0 +1,3 @@
+# Defence in depth: this folder must NEVER be served to browsers, even if the
+# root .htaccess is removed or the web root is misconfigured.
+Require all denied

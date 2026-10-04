@@ -1,0 +1,31 @@
+# =============================================================================
+#  .htaccess (project root) — FOR HOSTS WHERE YOU CAN'T CHANGE THE WEB ROOT
+# =============================================================================
+#  Best practice: point your domain's document root at the /public folder.
+#  Then this file is never used.
+#
+#  If you can't (some shared hosts, or XAMPP at http://localhost/your-folder/),
+#  this file quietly routes every request into /public, so /app, /storage and
+#  /database can never be fetched by a browser.
+#
+#  Requires Apache with mod_rewrite and "AllowOverride All" (the default on
+#  XAMPP and almost all cPanel hosts). On Nginx, see README.md.
+# =============================================================================
+
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Already inside public/? Stop rewriting (prevents an infinite loop).
+    RewriteRule ^public/ - [L]
+
+    # Everything else: serve it from public/.
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# Safety net: if mod_rewrite isn't available, refuse everything rather than
+# risk exposing private folders.
+<IfModule !mod_rewrite.c>
+    Require all denied
+</IfModule>
