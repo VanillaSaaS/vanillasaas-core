@@ -1,12 +1,16 @@
 # VanillaSaaS Core
 
-A self-contained SaaS starting point in plain PHP, HTML and CSS. No Composer, no npm, no build step, no framework. Download it, run one command, and you have working sign-up, sign-in, password reset, account settings and a signed-in dashboard, on SQLite or MySQL.
+A secure login system and dashboard in plain PHP, HTML and CSS, ready to build an app on. No Composer, no npm, no build step, no framework. Download it, run one command, and you have working sign-up, sign-in, password reset, account settings and a signed-in dashboard, on SQLite or MySQL.
 
-Every file is commented to explain *why* it does what it does, not just what. Read it in the order listed under [How a request flows](#how-a-request-flows) and you'll understand the whole codebase in an afternoon.
+It's written for a developer about to build a first app that other people will depend on: a members' area for a gym, a student portal for a tutor, a tool for a first paying client. On that job the login is the part you can't afford to get wrong, and the part nobody will thank you for.
+
+Every file is commented to explain *why* it does what it does, not just what. Read it in the order listed under [How a request flows](#how-a-request-flows) and you'll understand the whole codebase in an afternoon, well enough to explain it to whoever is paying for the app.
 
 > **Core is free and open source under the MIT licence.** It covers everything an app needs before it takes money: accounts, sessions, a dashboard and a database.
 >
 > **VanillaSaaS Pro** (in development) is the paid add-on for the point where you charge your own customers or manage other people's accounts: Stripe subscriptions, two-factor sign-in, Google and GitHub sign-in, roles, an admin area and teams. It installs on top of Core, so an app built on Core today doesn't need rebuilding. [Join the waitlist](https://vanillasaas.dev/#pricing).
+>
+> **Blueprints** are finished apps built on Core, sold as source code to deploy for clients. The first is [VanillaSaaS Bookings](https://vanillasaas.dev/blueprints/bookings): online booking for anyone who works by appointment.
 
 ---
 
@@ -144,7 +148,7 @@ Need Core to behave differently? Change a setting in `app/config.php`, or write 
 
 `UPGRADE.md` has the update steps. `VERSION` tells you which release you're on.
 
-## Building your product
+## Building your app
 
 ### Add a signed-in page
 
@@ -195,7 +199,7 @@ And one that keeps the Content-Security-Policy working: **no inline `<script>`, 
 ## Going live — checklist
 
 - [ ] **Point the domain's document root at `/public`.** On cPanel: Domains → your domain → Document Root. If your host won't allow it, upload the whole project and rely on the root `.htaccess` (Apache only).
-- [ ] Set your product's name: `'app' => ['name' => ...]` and `'mail' => ['from_name' => ...]` in `app/config.php`. The default is "Your App".
+- [ ] Set the app's name: `'app' => ['name' => ...]` and `'mail' => ['from_name' => ...]` in `app/config.php`. The default is "Your App".
 - [ ] Create `app/config.local.php` from `config.local.example.php` with:
   - `'env' => 'production'`
   - `'url' => 'https://your-domain.com'` (required: reset links are built from it)
@@ -211,6 +215,7 @@ And one that keeps the Content-Security-Policy working: **no inline `<script>`, 
 - [ ] Send yourself a password reset to confirm email delivery (check spam). If `mail()` is unreliable on your host, set `mail.driver` to `custom` and write `app_mail_send()` in `app/custom.php` to call your email provider's API.
 - [ ] Back up the database daily (cPanel's backup tool, or copy the SQLite file while the site is quiet).
 - [ ] Behind Cloudflare or a load balancer? Set `'security' => ['trust_proxy' => true]`, otherwise every visitor shares the proxy's IP for rate limiting.
+- [ ] **Built for a client?** Write down what they get (the address and their own sign-in) and what you keep (the hosting login, the database password, the backups). Agree who renews the domain and the hosting before the day one of them lapses.
 
 ### Nginx
 
@@ -244,7 +249,7 @@ server {
 
 ## What's deliberately not included
 
-These are product decisions that vary per app, so they're left out of Core rather than half-built in. Each has a ready-to-paste prompt in `AI-PROMPTS.md`. Two-factor sign-in, payments, teams, roles and the admin area are also being built and tested as VanillaSaaS Pro, for anyone who would rather not build them from a prompt:
+These are decisions that vary per app, so they're left out of Core rather than half-built in. Each has a ready-to-paste prompt in `AI-PROMPTS.md`. Two-factor sign-in, payments, teams, roles and the admin area are also being built and tested as VanillaSaaS Pro, for anyone who would rather not build them from a prompt:
 
 - Email verification on sign-up
 - "Remember me" persistent login
@@ -261,7 +266,7 @@ PHP 8.3 with the built-in server + SQLite, and Apache 2.4 (installed in a sub-fo
 
 Found a bug in Core? Open an issue on GitHub with your Core version (it's in `VERSION`), your PHP version and the steps to reproduce it. Report a security flaw privately instead: see `SECURITY.md`.
 
-Issues are for bugs in Core. Help with your own app is a paid service, [Launch Support](https://vanillasaas.dev/#pricing): 30 days of email support and one written review of your database design and first feature.
+Issues are for bugs in Core. Help with your own app is a paid service, the [Pre-launch Review](https://vanillasaas.dev/#review): a written review of your database design and first feature, then 14 days of email questions about it. It exists for the app you're about to hand to a client.
 
 ## Licence
 
