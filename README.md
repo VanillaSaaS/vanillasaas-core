@@ -172,7 +172,7 @@ CREATE TABLE projects (
 );
 ```
 
-Then run `php bin/install.php`. It applies each migration once and remembers which ones it has run, so your laptop, your live site and a fresh install all end up with the same tables. The MySQL version of this example, and the rules for naming files, are in `database/migrations/README.md`.
+With SQLite that's all: the file is applied on the next request that uses the database. With MySQL, run `php bin/install.php`. Either way each migration is applied once and remembered, so your laptop, your live site and a fresh install all end up with the same tables. The MySQL version of this example, and the rules for naming files, are in `database/migrations/README.md`.
 
 Give every user-owned table a `user_id` with `ON DELETE CASCADE`, so deleting an account deletes its data.
 
@@ -205,7 +205,7 @@ And one that keeps the Content-Security-Policy working: **no inline `<script>`, 
   - `'url' => 'https://your-domain.com'` (required: reset links are built from it)
   - your MySQL credentials, if using MySQL
   - `'mail' => ['driver' => 'mail', 'from' => 'no-reply@your-domain.com']`
-- [ ] **MySQL:** create the database, then `php bin/install.php`. No shell access: import `database/schema.mysql.sql` in phpMyAdmin, then each file in `database/migrations/mysql/` in name order.
+- [ ] **MySQL:** create the database, then `php bin/install.php`. No shell access: import `database/schema.mysql.sql` in phpMyAdmin, then each file in `database/migrations/mysql/` in name order. **SQLite:** nothing to run, on any host.
 - [ ] Make `/storage` and everything in it writable by the web server.
 - [ ] Turn on HTTPS (Let's Encrypt is free on almost every host). Secure cookies and HSTS switch on automatically.
 - [ ] **Prove the private folders are private.** Each of these must return 403 or 404, never a file:

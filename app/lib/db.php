@@ -12,6 +12,11 @@
  *  db_all()    → all rows
  *  db_run()    → INSERT/UPDATE/DELETE; returns number of affected rows
  *
+ *  SQLite needs no setup and no commands, ever: the tables are created on the
+ *  first request, and later migrations apply themselves (see
+ *  db_migrate_if_pending() below). MySQL is set up once with bin/install.php
+ *  or phpMyAdmin.
+ *
  *  THE ONLY RULE THAT MATTERS: NEVER BUILD SQL WITH STRING CONCATENATION.
  *
  *      BAD:  db_one("SELECT * FROM users WHERE email = '$email'");
@@ -59,6 +64,7 @@ function db(): PDO
         $pdo->exec('PRAGMA busy_timeout = 5000');
 
         db_install_if_needed($pdo);
+        db_migrate_if_pending($pdo);
         return $pdo;
     }
 
@@ -141,6 +147,96 @@ function db_install_if_needed(PDO $pdo): void
 }
 
 /**
+ * SQLite only: apply any migration that hasn't been applied yet, on the next
+ * request after you upload it. No command to run.
+ *
+ * WHY SQLITE GETS THIS AND MYSQL DOESN'T
+ * With MySQL there is always another way in: phpMyAdmin imports a migration
+ * file on any host. SQLite has no such tool. On a host with no command line,
+ * a table added six months after launch could only be applied by downloading
+ * the live database, migrating it at home and uploading it again, losing
+ * whatever was written in between. SQLite is the zero-setup option, so it has
+ * to stay zero-setup after day one as well.
+ * (MySQL is also left alone because a production MySQL user often, rightly,
+ * has no permission to create tables.)
+ *
+ * WHAT IT COSTS
+ * One folder listing and one tiny query per request, to compare the files in
+ * database/migrations/sqlite/ with the names in the `migrations` table.
+ * When they match, which is every request but one, nothing else happens.
+ *
+ * THE TWO THINGS THAT COULD GO WRONG, AND WHAT STOPS THEM
+ *   Two visitors arrive at once.  Both would try to create the same table.
+ *                                 A file lock lets one through; the other
+ *                                 waits, looks again, and finds nothing to do.
+ *   A migration has a mistake.    All pending migrations run inside one
+ *                                 transaction. If any statement fails, every
+ *                                 change is undone and the error is shown
+ *                                 and logged. The database is never left
+ *                                 half-migrated. Fix the file and reload.
+ *
+ * So: test a migration on your own computer first, exactly as before. The
+ * only thing that has changed is who presses the button on the live site.
+ */
+function db_migrate_if_pending(PDO $pdo): void
+{
+    if (!db_migrations_pending($pdo)) {
+        return;
+    }
+
+    $lock = fopen(STORAGE_PATH . '/cache/migrate.lock', 'c');
+    if ($lock === false || !flock($lock, LOCK_EX)) {
+        throw new RuntimeException('Cannot lock storage/cache/migrate.lock. Make /storage writable by the web server.');
+    }
+
+    try {
+        // Someone else may have finished the job while we waited for the lock.
+        if (!db_migrations_pending($pdo)) {
+            return;
+        }
+
+        $pdo->beginTransaction();
+        try {
+            $applied = db_migrate($pdo);
+            $pdo->commit();
+        } catch (Throwable $ex) {
+            $pdo->rollBack();
+            log_message('error', 'A database migration failed and was rolled back. Nothing was changed.', [
+                'error' => $ex->getMessage(),
+            ]);
+            throw $ex;
+        }
+
+        if ($applied) {
+            log_message('info', 'Database migrations applied automatically', ['migrations' => $applied]);
+        }
+    } finally {
+        flock($lock, LOCK_UN);
+        fclose($lock);
+    }
+}
+
+/** Is there a file in database/migrations/sqlite/ that the database hasn't recorded? */
+function db_migrations_pending(PDO $pdo): bool
+{
+    $files = glob(APP_ROOT . '/database/migrations/sqlite/*.sql') ?: [];
+    if (!$files) {
+        return false;
+    }
+    try {
+        $done = $pdo->query('SELECT name FROM migrations')->fetchAll(PDO::FETCH_COLUMN);
+    } catch (PDOException) {
+        return true;        // a database from before the migrations table existed
+    }
+    foreach ($files as $file) {
+        if (!in_array(basename($file, '.sql'), $done, true)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
  * Apply every migration that hasn't been applied yet. Returns the names of
  * all migrations applied during this request or command.
  *
@@ -158,8 +254,9 @@ function db_install_if_needed(PDO $pdo): void
  * baseline and are never edited again; every later change is a migration.
  * That is what lets an old install and a brand-new one end up identical.
  *
- * Run by `php bin/install.php`, and automatically when a new SQLite database
- * is created.
+ * Run by `php bin/install.php`. With SQLite it also runs by itself, on the
+ * first request after a new migration file appears (db_migrate_if_pending()
+ * above). With MySQL you run the command, or import the file in phpMyAdmin.
  */
 function db_migrate(PDO $pdo): array
 {
@@ -173,7 +270,7 @@ function db_migrate(PDO $pdo): array
     sort($files);
 
     // Remembered for the life of this PHP process, so the installer can report
-    // migrations that a brand-new SQLite database applied on connecting.
+    // migrations that a SQLite database applied by itself on connecting.
     static $applied = [];
 
     $record  = $pdo->prepare('INSERT INTO migrations (name, applied_at) VALUES (?, ?)');

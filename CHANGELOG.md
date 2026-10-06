@@ -8,6 +8,19 @@ How to read an entry:
 - **Files** lists every changed file. Files in `app/lib/` are replaced whole. For a file you own (`public/`, `app/views/`, `app/config.php`), the entry shows the lines before and after, so you can make the same edit by hand.
 - **Database** names any new migration. "None" means there's nothing to run.
 
+## 1.0.1 — 2026-10-06
+
+**SQLite now applies new migrations by itself.** In 1.0.0 a SQLite database created its tables on the first request, but a migration added later needed `php bin/install.php`. On a host with no command line there was no way to run it, and SQLite has no phpMyAdmin to fall back on. Now a file in `database/migrations/sqlite/` is applied on the first request that uses the database after the file appears.
+
+- All pending migrations run in one transaction. If any statement fails, nothing is changed, the error is shown and written to `storage/logs/app.log`, and the next request tries again once you've fixed the file.
+- A file lock stops two simultaneous visitors applying the same migration twice.
+- The check costs one folder listing and one small query per request.
+- MySQL is unchanged: run `php bin/install.php` or import the file in phpMyAdmin.
+
+One thing to check before you update: if `database/migrations/sqlite/` holds a file you have deliberately not applied, it will be applied. Move it out of the folder first.
+
+**Files:** `app/lib/db.php` and `bin/install.php` (replace; the second is a comment change only), `VERSION`, `README.md`, `UPGRADE.md`, `database/migrations/README.md`. **Database:** none.
+
 ## 1.0.0 — 2026-10-02
 
 First release of VanillaSaaS Core.

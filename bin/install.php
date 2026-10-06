@@ -14,12 +14,16 @@
  *    2. Applies any migration in database/migrations/<driver>/ that hasn't
  *       been applied yet — Core's (core-*.sql) and your own (app-*.sql).
  *
- *  RUN IT: once after install on MySQL, and again after every Core update or
- *  whenever you add a migration. A new SQLite database does both steps by
- *  itself on the first request; an existing one needs this command.
+ *  RUN IT (MySQL): once after install, and again after every Core update or
+ *  whenever you add a migration.
  *
- *  No shell access? Import database/schema.mysql.sql in phpMyAdmin, then
- *  each new migration file in name order. See UPGRADE.md.
+ *  SQLite never needs it. The tables are created on the first request, and a
+ *  new migration file is applied on the next request after you upload it.
+ *  Running this is still harmless, and prints what is installed.
+ *
+ *  No shell access on a MySQL host? Import database/schema.mysql.sql in
+ *  phpMyAdmin, then each new migration file in name order. Or run this
+ *  script once from your host's Cron Jobs screen. See UPGRADE.md.
  * =============================================================================
  */
 

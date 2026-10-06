@@ -31,9 +31,13 @@ Never change a migration after it has run anywhere. If it was wrong, write a new
 php bin/install.php
 ```
 
-It applies whatever hasn't been applied and records each file in the `migrations` table. Run it after adding a migration and after every Core update. A brand-new SQLite database runs them by itself on the first request.
+It applies whatever hasn't been applied and records each file in the `migrations` table.
 
-No shell access? In phpMyAdmin, import the new files from `database/migrations/mysql/` in name order. End each file with the line below so the database remembers it ran, and `bin/install.php` skips it later:
+**MySQL:** run it after adding a migration and after every Core update.
+
+**SQLite:** you don't need to. A migration file is applied on the first request after it appears in `database/migrations/sqlite/`, on your own computer and on the live site. All pending files run in one transaction, so a file with a mistake in it changes nothing: the error is shown and logged, you fix the file, and the next request tries again. Test it locally first all the same. Don't put `BEGIN` or `COMMIT` in a SQLite migration: Core already wraps it.
+
+No shell access on a MySQL host? In phpMyAdmin, import the new files from `database/migrations/mysql/` in name order. End each file with the line below so the database remembers it ran, and `bin/install.php` skips it later:
 
 ```sql
 INSERT INTO migrations (name, applied_at) VALUES ('app-001-projects', '2026-10-02 12:00:00');
