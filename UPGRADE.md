@@ -51,6 +51,12 @@ A security fix is published on GitHub and emailed to the VanillaSaaS update list
 
 ## Release notes for upgraders
 
+### 1.0.2
+
+Replace `app/lib/session.php` and `VERSION`. No migration.
+
+Nothing changes until you edit `app/config.php`: your app keeps the cookie name it has. If you run more than one Core app on the same computer, give each its own cookie by setting `session.name` to `''` (Core makes a name from the folder path) or to a name of your choosing. Everyone signed in is signed out once, the next time they load a page.
+
 ### 1.0.1
 
 Replace `app/lib/db.php`, `bin/install.php` and `VERSION`. No migration, no change to your own files.

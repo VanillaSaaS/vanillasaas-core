@@ -37,10 +37,12 @@ Total: 35 small PHP files and two front-end files. Nothing to update, nothing to
 
 ## Quick start
 
+The download unzips to a folder called `vanillasaas-core` (or `vanillasaas-core-main` from GitHub's Download ZIP). Rename it after the app you're building, for example `dog-walker`, before you start: it's your project from now on, and the name follows it into Git, your editor and your host. Nothing in Core depends on the folder's name.
+
 ### Option A — PHP's built-in server (any OS, 30 seconds)
 
 ```bash
-cd vanillasaas-core
+cd dog-walker
 php -S localhost:8000 -t public
 ```
 
@@ -50,11 +52,13 @@ Open <http://localhost:8000> and create an account. The SQLite database is creat
 
 ### Option B — XAMPP / MAMP / WAMP
 
-1. Put the folder inside `htdocs` (e.g. `C:\xampp\htdocs\vanillasaas-core`).
+1. Put the folder inside `htdocs` (e.g. `C:\xampp\htdocs\dog-walker`).
 2. Start Apache.
-3. Open `http://localhost/vanillasaas-core/`.
+3. Open `http://localhost/dog-walker/`.
 
 The root `.htaccess` routes every request into `/public` automatically.
+
+Running more than one Core app on `localhost`? Each gets its own session cookie, named from its folder path, so signing in to one never signs you out of another. (Before 1.0.2 they shared one; see `UPGRADE.md`.)
 
 ### Testing password reset locally
 
@@ -224,7 +228,7 @@ And one that keeps the Content-Security-Policy working: **no inline `<script>`, 
 ```nginx
 server {
     server_name your-domain.com;
-    root /var/www/vanillasaas-core/public;
+    root /var/www/dog-walker/public;
     index index.php;
 
     # Unknown addresses get the app's own styled "Page not found".

@@ -89,10 +89,14 @@ return [
     // Sessions
     // -------------------------------------------------------------------------
     'session' => [
-        // Cookie name. Over HTTPS we automatically prefix it with "__Host-",
-        // which tells the browser: only accept this cookie if it is Secure,
-        // has Path=/ and no Domain. That blocks subdomain cookie-injection.
-        'name' => 'app_session',
+        // Cookie name. Leave it empty and Core makes one from this project's
+        // folder path, so two apps on http://localhost/ never share a cookie
+        // (if they did, signing in to one would sign you out of the other).
+        // Set a name such as 'myapp_session' if you'd rather choose it.
+        // Over HTTPS it is prefixed with "__Host-", which tells the browser:
+        // only accept this cookie if it is Secure, has Path=/ and no Domain.
+        // That blocks subdomain cookie-injection.
+        'name' => '',
 
         // Sign the user out after this many seconds of inactivity.
         'idle_timeout' => 60 * 60 * 2,        // 2 hours

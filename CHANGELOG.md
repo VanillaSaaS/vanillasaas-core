@@ -8,6 +8,25 @@ How to read an entry:
 - **Files** lists every changed file. Files in `app/lib/` are replaced whole. For a file you own (`public/`, `app/views/`, `app/config.php`), the entry shows the lines before and after, so you can make the same edit by hand.
 - **Database** names any new migration. "None" means there's nothing to run.
 
+## 1.0.2 — 2026-10-11
+
+**Two Core apps on one computer no longer sign each other out.** Every Core app used the same session cookie name, `app_session`. Browsers keep cookies per host, not per folder, so two apps at `http://localhost/app-one/` and `http://localhost/app-two/` overwrote each other's cookie: signing in to one signed you out of the other, with no error to explain it. A live site rarely hits this, since it usually has a domain to itself. Anyone with more than one app on their own computer hits it straight away.
+
+- `session.name` may now be empty. When it is, the cookie name is made from the project's folder path (`app_` plus 10 characters of a SHA-256 hash), so every app gets its own with nothing to set.
+- The empty value is the new default in `app/config.php`. An app that already has `'name' => 'app_session'` keeps it and behaves exactly as before.
+- Moving a project to a different folder changes the generated name, which signs everyone out once. Set `session.name` yourself if that matters.
+
+**Files:** `app/lib/session.php` (replace), `VERSION`, `README.md`, `UPGRADE.md`. `app/config.php` is yours; to take the new default, change one line under `session`:
+
+```php
+// before
+'name' => 'app_session',
+// after
+'name' => '',
+```
+
+Or set your own name, such as `'dogwalker_session'`. **Database:** none.
+
 ## 1.0.1 — 2026-10-06
 
 **SQLite now applies new migrations by itself.** In 1.0.0 a SQLite database created its tables on the first request, but a migration added later needed `php bin/install.php`. On a host with no command line there was no way to run it, and SQLite has no phpMyAdmin to fall back on. Now a file in `database/migrations/sqlite/` is applied on the first request that uses the database after the file appears.

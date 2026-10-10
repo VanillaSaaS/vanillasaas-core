@@ -55,7 +55,7 @@ function session_start_secure(): void
 
     // The "__Host-" prefix is a browser-enforced promise: the cookie must be
     // Secure, Path=/, and have no Domain. Only valid over HTTPS.
-    $name = (string) config('session.name', 'app_session');
+    $name = session_cookie_name();
     session_name($secure ? '__Host-' . $name : $name);
 
     session_set_cookie_params([
@@ -69,6 +69,29 @@ function session_start_secure(): void
 
     session_start();
     session_enforce_timeouts();
+}
+
+/**
+ * The session cookie's name: session.name from config, or, when that is
+ * empty, one made from this project's folder path.
+ *
+ * Why not one fixed name? Cookies belong to a host, not a folder. Two Core
+ * apps on http://localhost/ with the same cookie name overwrite each other's
+ * cookie, so signing in to one signs you out of the other. A name made from
+ * the folder path is different for every app, with nothing to configure.
+ *
+ * The cost: move the project to a different folder and the name changes, so
+ * everyone signed in is signed out once. Set session.name if that matters.
+ */
+function session_cookie_name(): string
+{
+    $name = (string) config('session.name', '');
+
+    if ($name === '') {
+        $name = 'app_' . substr(hash('sha256', APP_ROOT), 0, 10);
+    }
+
+    return $name;
 }
 
 /**
