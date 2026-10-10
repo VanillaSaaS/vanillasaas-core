@@ -64,6 +64,10 @@ Running more than one Core app on `localhost`? Each gets its own session cookie,
 
 Mail is set to the `log` driver by default, so nothing is sent. Request a reset, then open `storage/logs/mail.log` and copy the link.
 
+### Building with an AI assistant
+
+`AGENTS.md` holds Core's rules for AI coding agents: where code goes, how database changes are made, and the security rules every page follows. Copilot agent mode, Cursor, Codex and Claude Code read it by themselves, so the rules are in force without you pasting them. Add your own app's notes at the end of it. The workflow is at <https://vanillasaas.dev/docs/build-with-ai>.
+
 ---
 
 ## Folder structure
@@ -118,6 +122,8 @@ vanillasaas-core/
 ├── UPGRADE.md               how to apply an update to an app you've built
 ├── LICENSE.md               what you can and can't do with Core
 ├── SECURITY.md              every defence, and the known limits
+├── AGENTS.md                rules AI coding agents read by themselves; yours to extend
+├── CLAUDE.md                points Claude Code at AGENTS.md
 └── AI-PROMPTS.md            prompts for extending Core with an AI assistant
 ```
 

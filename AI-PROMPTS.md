@@ -2,7 +2,9 @@
 
 The codebase is small and conventional, which is exactly what AI coding assistants (Claude, ChatGPT, Cursor, Copilot) handle well. The risk is that the assistant quietly drags in a framework, writes SQL with string concatenation, or adds inline JavaScript that the Content-Security-Policy will block. Paste the context block first and those problems mostly disappear.
 
-**How to use these:** start a new chat, paste the context block, then paste the files the prompt names (the assistant needs to see them), then the feature prompt.
+**Using an agent in your editor?** GitHub Copilot agent mode, Cursor, Codex and Claude Code read `AGENTS.md` in the project root by themselves (Claude Code through `CLAUDE.md`), and it holds the same rules as the context block below. Skip section 1, and skip pasting files: the agent can open them. Start at section 2 and paste the feature prompt.
+
+**Using a chat in the browser?** Start a new chat, paste the context block, then paste the files the prompt names (the assistant needs to see them), then the feature prompt.
 
 ---
 
@@ -52,7 +54,8 @@ NON-NEGOTIABLE RULES
   using the existing CSS variables and component classes.
 - Timestamps: generated in PHP with now_utc(), stored as 'Y-m-d H:i:s' UTC.
 - New user-owned tables: user_id with a foreign key ON DELETE CASCADE,
-  written as a migration for BOTH drivers. Applied with: php bin/install.php
+  written as a migration for BOTH drivers. SQLite applies it by itself on the
+  next request that uses the database; MySQL needs php bin/install.php.
 - New PHP functions go in app/custom.php (or a file it requires), never in
   app/lib/. If Core's behaviour must change, wrap it in a new function.
   Code that must run on every request goes in app_boot() in app/custom.php
